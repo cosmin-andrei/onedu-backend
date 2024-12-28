@@ -1,4 +1,3 @@
-// backend/models/Administrator.js
 module.exports = (sequelize, DataTypes) => {
     const Administrator = sequelize.define('Administrator', {
         userId: {

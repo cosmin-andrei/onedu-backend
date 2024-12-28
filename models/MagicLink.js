@@ -1,4 +1,3 @@
-// backend/models/MagicLink.js
 module.exports = (sequelize, DataTypes) => {
     const MagicLink = sequelize.define('MagicLink', {
         token: {

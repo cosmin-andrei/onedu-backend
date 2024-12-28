@@ -1,5 +1,3 @@
-// backend/controllers/formulare230Controller.js
-
 const {Formulare230} = require('../models');
 const sendEmail = require('../utils/sendEmail');
 const fs = require('fs-extra');

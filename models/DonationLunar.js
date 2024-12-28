@@ -1,4 +1,3 @@
-// models/DonationLunar.js
 module.exports = (sequelize, DataTypes) => {
     const DonationLunar = sequelize.define('DonationLunar', {
         idUser: {

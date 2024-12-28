@@ -1,4 +1,3 @@
-// models/DonationOneTime.js
 module.exports = (sequelize, DataTypes) => {
     const DonationOneTime = sequelize.define('DonationOneTime', {
         idUser: {
