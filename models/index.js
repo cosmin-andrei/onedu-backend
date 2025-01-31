@@ -1,12 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config/config.js')[process.env.NODE_ENV || 'development'];
 
-const sequelize = new Sequelize(config.database, config.username, config.password, {
-    dialect: config.dialect,
-    storage: config.storage,
-    logging: config.logging,
-    // timezone: config.timezone,
-});
+const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 const User = require('./User')(sequelize, DataTypes);
 const Administrator = require('./Administrator')(sequelize, DataTypes);

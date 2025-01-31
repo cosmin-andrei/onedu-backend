@@ -5,13 +5,11 @@ module.exports = {
         dialect: 'sqlite',
         storage: './identifier.sqlite',
         logging: console.log,
-        timezone: 'Europe/Bucharest'
     },
     test: {
         dialect: 'sqlite',
         storage: ':memory:',
         logging: false,
-        timezone: 'Europe/Bucharest'
     },
     production: {
         dialect: 'mysql',
