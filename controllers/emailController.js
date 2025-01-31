@@ -1,10 +1,5 @@
-// backend/controllers/emailController.js
 const sendEmail = require('../utils/sendEmail');
 
-/**
- * Controller pentru trimiterea email-urilor
- * Aici poți adăuga funcționalități specifice de trimitere a email-urilor
- */
 exports.sendEmail = async (req, res) => {
     const { to, subject, html, attachments } = req.body;
 
