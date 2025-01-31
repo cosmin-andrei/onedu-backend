@@ -2,13 +2,8 @@ require('dotenv').config();
 
 module.exports = {
     development: {
-        dialect: process.env.DB_DIALECT || 'sqlite',
-        storage: process.env.DB_STORAGE || './identifier.sqlite',
-        username: process.env.DB_USER || null,
-        password: process.env.DB_PASSWORD || null,
-        database: process.env.DB_NAME || null,
-        host: process.env.DB_HOST || null,
-        port: process.env.DB_PORT || null,
+        dialect: 'sqlite',
+        storage: './identifier.sqlite',
         logging: console.log,
         timezone: 'Europe/Bucharest'
     },
@@ -19,7 +14,7 @@ module.exports = {
         timezone: 'Europe/Bucharest'
     },
     production: {
-        dialect: process.env.DB_DIALECT || 'mysql',
+        dialect: 'mysql',
         username: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
