@@ -8,7 +8,10 @@ const userRoutes = require('./routes/userRoutes');
 const formulare230Routes = require('./routes/formulare230Routes');
 const donationRoutes = require('./routes/donationRoutes');
 const smartPayRoutes = require('./routes/smartPayRoutes');
+const blogRouter = require('./routes/blogRoutes');
+const sponsorizariRoutes = require('./routes/sponsorizariRoutes');
 const rateLimit = require('express-rate-limit');
+const ftpRoutes = require('./routes/ftpRoutes');
 const logger = require('./utils/logger');
 require('dotenv').config();
 require('./jobs/donationStatusChecker');
@@ -21,6 +24,9 @@ app.use(cors({
     credentials: true
 }));
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(bodyParser.json());
 
 const limiter = rateLimit({
@@ -28,14 +34,18 @@ const limiter = rateLimit({
     max: 100,
     message: 'Prea multe cereri de la această adresă IP, încearcă mai târziu.'
 });
+
 app.use(limiter);
 
+app.use('/ftp', ftpRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/email', emailRoutes);
-// app.use('/api/users', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/formulare230', formulare230Routes);
 app.use('/api/donations', donationRoutes);
-// app.use('/api/smartpay', smartPayRoutes);
+app.use('/api/blog', blogRouter);
+app.use('/api/sponsorizare', sponsorizariRoutes);
+
 
 app.get('/api/dashboard', require('./middlewares/authenticateJWT'), (req, res) => {
     res.json({ message: `Bine ai venit, utilizatorul cu ID-ul ${req.user.userId}!` });

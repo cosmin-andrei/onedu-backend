@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    const Administrator = sequelize.define('Administrator', {
+    return sequelize.define('Administrator', {
         userId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -14,6 +14,4 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'Administrators',
         timestamps: false
     });
-
-    return Administrator;
 };

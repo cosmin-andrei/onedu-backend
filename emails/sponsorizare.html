@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .email-header {
+            padding: 20px;
+        }
+        .email-header img {
+            max-width: 150px;
+        }
+        .email-content {
+            padding: 20px;
+        }
+        .email-footer {
+            padding: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+    <title></title>
+</head>
+<body>
+<div class="email-header">
+    <img src="https://assets.onedu.ro/logos/logo.png" alt="Asociația ONedu" />
+</div>
+<div class="email-content">
+    <p>Stimate {{formaAdresare}} {{prenumeReprezentant}} {{numeReprezentant}},</p>
+    <p>
+        Vă mulțumim pentru sprijinul oferit Asociației ONedu! Vă atașăm contractul de sponsorizare pentru
+        <strong>{{numeCompanie}}</strong>. Vă rugăm să îl transmiteți semnat ca răspuns la acest email.
+    </p>
+    <p>
+        Dacă aveți întrebări, nu ezitați să ne contactați la
+        <a href="mailto:financiar@onedu.ro">financiar@onedu.ro</a>.
+    </p>
+</div>
+<div class="email-footer">
+    Cu considerație,<br>
+    Echipa Asociației ONedu
+</div>
+</body>
+</html>

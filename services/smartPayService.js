@@ -18,12 +18,12 @@ const certPath = path.resolve(__dirname, '../', SMARTPAY_CERT_PATH);
 const keyPath = path.resolve(__dirname, '../', SMARTPAY_KEY_PATH);
 
 if (!fs.existsSync(certPath)) {
-    console.error(`Fișierul de certificat SmartPay nu a fost găsit: ${certPath}`);
+    console.error(`Fisierul de certificat SmartPay nu a fost gasit: ${certPath}`);
     process.exit(1);
 }
 
 if (!fs.existsSync(keyPath)) {
-    console.error(`Fișierul de cheie SmartPay nu a fost găsit: ${keyPath}`);
+    console.error(`Fisierul de cheie SmartPay nu a fost gasit: ${keyPath}`);
     process.exit(1);
 }
 
@@ -38,8 +38,6 @@ const FormData = require('form-data');
 const authenticate = async () => {
     try {
         const url = `${SMARTPAY_BASE_URI}${SMARTPAY_AUTH_ENDPOINT}`;
-        console.log(`Autentificare SmartPay: ${url}`);
-
         const formData = new FormData();
         formData.append('client_id', SMARTPAY_CLIENT_ID);
 
@@ -50,18 +48,15 @@ const authenticate = async () => {
             },
         });
 
-        console.log('Răspuns autentificare:', response.data);
-
-        const {access_token, refresh_token, paymentId} = response.data.result;
+        const { access_token, refresh_token, paymentId } = response.data.result;
 
         if (!access_token || !refresh_token || !paymentId) {
-            console.error('Autentificare SmartPay: Token-uri lipsă în răspuns.');
-            throw new Error('Răspuns incomplet de la SmartPay la autentificare.');
+            throw new Error('Raspuns incomplet de la SmartPay la autentificare.');
         }
 
-        return {access_token, refresh_token, paymentId};
+        return { access_token, refresh_token, paymentId };
     } catch (error) {
-        console.error('Eroare la autentificarea cu SmartPay:', error.response ? error.response.data : error.message);
+        console.error('Eroare la autentificare SmartPay:', error.response ? error.response.data : error.message);
         throw error;
     }
 };
@@ -69,8 +64,6 @@ const authenticate = async () => {
 const refreshAccessToken = async (refreshToken) => {
     try {
         const url = `${SMARTPAY_BASE_URI}${SMARTPAY_AUTHREFRESH_ENDPOINT}`;
-        console.log(`Reînnoire token SmartPay: ${url}`);
-
         const formData = new FormData();
         formData.append('refresh_token', refreshToken);
 
@@ -81,45 +74,42 @@ const refreshAccessToken = async (refreshToken) => {
             },
         });
 
-        console.log('Răspuns reînnoire token:', response.data);
-
         const { access_token, refresh_token } = response.data.result;
 
         if (!access_token || !refresh_token) {
-            throw new Error('Răspuns incomplet la reînnoirea token-ului.');
+            throw new Error('Raspuns incomplet la reinnoirea token-ului.');
         }
 
         return { access_token, refresh_token };
     } catch (error) {
-        console.error('Eroare la reînnoirea token-ului SmartPay:', error.response ? error.response.data : error.message);
+        console.error('Eroare la reinnoirea token-ului SmartPay:', error.response ? error.response.data : error.message);
         throw error;
     }
 };
 
-
 const initPayment = async (paymentId, banca, amount, tokens, userid, email) => {
     try {
         const url = `${SMARTPAY_BASE_URI}${SMARTPAY_INIT_PAYMENT_ENDPOINT}/${paymentId}`;
-        const {access_token} = tokens;
+        const { access_token } = tokens;
 
         const response = await axios.post(
             url,
             {
-                "amount": amount,
-                "creditorIban": "RO49BTRLRONCRT0CO9563601",
-                "creditorName": "Asociatia ONedu",
-                "debtorBank": banca,
-                "details": "Donatie online prin onedu.ro",
-                "psuIntermediarId": userid,
-                "psuEmail": email,
-                "redirectURL": "https://onedu.ro/donatie-succes",
-                "ibanOptimization": true,
-                "TCAccepted": true,
+                amount,
+                creditorIban: "RO49BTRLRONCRT0CO9563601",
+                creditorName: "Asociatia ONedu",
+                debtorBank: banca,
+                details: "Donatie online prin onedu.ro",
+                psuIntermediarId: userid,
+                psuEmail: email,
+                redirectURL: "https://onedu.ro/donatie-succes",
+                ibanOptimization: true,
+                TCAccepted: true,
             },
             {
                 httpsAgent,
                 headers: {
-                    'Authorization': `Bearer ${access_token}`,
+                    Authorization: `Bearer ${access_token}`,
                     'Content-Type': 'application/json',
                 },
             }
@@ -127,11 +117,10 @@ const initPayment = async (paymentId, banca, amount, tokens, userid, email) => {
         return response.data;
     } catch (error) {
         if (error.response && error.response.status === 401) {
-            console.warn('Token expirat. Încerc reînnoirea...');
             const newTokens = await refreshAccessToken(tokens.refresh_token);
             return initPayment(paymentId, banca, amount, newTokens, userid);
         }
-        console.error(`Eroare la inițializarea plății pentru banca ${banca}:`, error.response ? error.response.data : error.message);
+        console.error(`Eroare la initializarea platii pentru banca ${banca}:`, error.response ? error.response.data : error.message);
         throw error;
     }
 };
@@ -139,32 +128,31 @@ const initPayment = async (paymentId, banca, amount, tokens, userid, email) => {
 const initRecurringPayment = async (paymentId, banca, amount, tokens, userId, email) => {
     try {
         const url = `${SMARTPAY_BASE_URI}${SMARTPAY_INIT_PAYMENT_ENDPOINT}/${paymentId}`;
-        const {access_token} = tokens;
-
+        const { access_token } = tokens;
         const today = new Date();
         const startDate = today.toISOString().split('T')[0];
 
         const response = await axios.post(
             url,
             {
-                "amount": amount,
-                "creditorIban": "RO49BTRLRONCRT0CO9563601",
-                "creditorName": "Asociatia ONedu",
-                "debtorBank": banca,
-                "details": "Donatie lunara online prin onedu.ro",
-                "psuIntermediarId": userId,
-                "psuEmail": email,
-                "redirectURL": "https://onedu.ro/donatie-succes",
-                "ibanOptimization": true,
-                "TCAccepted": true,
-                "startDate": startDate,
-                "Frequency": "Monthly",
-                "dayOfExecution": 15,
+                amount,
+                creditorIban: "RO49BTRLRONCRT0CO9563601",
+                creditorName: "Asociatia ONedu",
+                debtorBank: banca,
+                details: "Donatie lunara online prin onedu.ro",
+                psuIntermediarId: userId,
+                psuEmail: email,
+                redirectURL: "https://onedu.ro/donatie-succes",
+                ibanOptimization: true,
+                TCAccepted: true,
+                startDate,
+                Frequency: "Monthly",
+                dayOfExecution: 15,
             },
             {
                 httpsAgent,
                 headers: {
-                    'Authorization': `Bearer ${access_token}`,
+                    Authorization: `Bearer ${access_token}`,
                     'Content-Type': 'application/json',
                 },
             }
@@ -172,15 +160,13 @@ const initRecurringPayment = async (paymentId, banca, amount, tokens, userId, em
         return response.data;
     } catch (error) {
         if (error.response && error.response.status === 401) {
-            console.warn('Token expirat. Încerc reînnoirea...');
             const newTokens = await refreshAccessToken(tokens.refresh_token);
             return initPayment(paymentId, banca, amount, newTokens, userId);
         }
-        console.error(`Eroare la inițializarea plății pentru banca ${banca}:`, error.response ? error.response.data : error.message);
+        console.error(`Eroare la initializarea platii pentru banca ${banca}:`, error.response ? error.response.data : error.message);
         throw error;
     }
-
-}
+};
 
 const checkPaymentStatus = async (paymentId) => {
     try {
@@ -193,7 +179,7 @@ const checkPaymentStatus = async (paymentId) => {
         });
         return response.data;
     } catch (error) {
-        console.error('Eroare la verificarea stării plății:', error.response ? error.response.data : error.message);
+        console.error('Eroare la verificarea starii platii:', error.response ? error.response.data : error.message);
         throw error;
     }
 };

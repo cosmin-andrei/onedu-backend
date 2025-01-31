@@ -4,13 +4,13 @@ const smartPayService = require('../services/smartPayService');
 const logger = require('../utils/logger');
 
 cron.schedule('*/15 * * * *', async () => {
-    logger.log('Verific statusul donațiilor în așteptare.');
+    logger.log('Verificare status.');
 
     try {
         const donations = await DonationOneTime.findAll({ where: { stare: 'waiting_payment' } });
 
         if (!donations.length) {
-            logger.log('Nu exist donații în așteptare.');
+            logger.log('Nu exista donatii.');
             return;
         }
 
@@ -21,13 +21,13 @@ cron.schedule('*/15 * * * *', async () => {
                 if (paymentStatus.status === 'completed') {
                     donation.stare = 'completed';
                     await donation.save();
-                    logger.log(`Plata ${donation.paymentId} finalizată.`);
+                    logger.log(`Plata ${donation.paymentId} finalizata.`);
                 } else if (paymentStatus.status === 'failed') {
                     donation.stare = 'failed';
                     await donation.save();
-                    logger.log(`Plata ${donation.paymentId} a eșuat.`);
+                    logger.log(`Plata ${donation.paymentId} esuata.`);
                 } else {
-                    logger.log(`Plata ${donation.paymentId} este încă în așteptare.`);
+                    logger.log(`Plata ${donation.paymentId} este in asteptare.`);
                 }
             } catch (error) {
                 logger.error(`Eroare la verificarea statusului pentru donația ${donation.paymentId}:`, error.message);

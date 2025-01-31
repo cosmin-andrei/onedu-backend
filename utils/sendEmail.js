@@ -9,12 +9,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendEmail = async (to, subject, html) => {
+const sendEmail = async (to, subject, html, attachments) => {
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: `Asociația ONedu <${process.env.EMAIL_USER}>`,
+        replyTo: "secretariat@onedu.ro",
         to,
         subject,
-        html
+        html,
+        attachments
     };
 
     try {

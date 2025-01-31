@@ -73,11 +73,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
         },
-        newsletter: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false
-        }
     }, {
         tableName: 'formulare230',
         timestamps: false

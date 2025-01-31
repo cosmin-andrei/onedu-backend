@@ -1,9 +1,10 @@
-// backend/controllers/authController.js
 const { User, Administrator, MagicLink } = require('../models');
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
+const moment = require('moment-timezone');
 
 exports.requestMagicLink = async (req, res) => {
     const { email } = req.body;
@@ -23,17 +24,13 @@ exports.requestMagicLink = async (req, res) => {
             return res.status(403).json({ message: 'Acces refuzat. Nu sunteți administrator.' });
         }
 
-        // Generarea unui token unic
         const token = crypto.randomBytes(32).toString('hex');
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Link valid 15 minute
+        const expiresAt = moment().add(15, 'minutes').toDate();
 
-        // Stocarea token-ului
         await MagicLink.create({ token, userId: user.id, expiresAt });
 
-        // Crearea link-ului magic
-        const magicLink = `${process.env.BASE_URL}/api/auth/validate-magic-link?token=${token}`;
+        const magicLink = `${process.env.FRONTEND_URL}/dashboard/validate-magic-link?token=${token}`;
 
-        // Trimiterea email-ului
         const html = `<p>Salut,</p>
                       <p>Folosește următorul link pentru a te autentifica:</p>
                       <a href="${magicLink}">Autentificare</a>
@@ -47,6 +44,8 @@ exports.requestMagicLink = async (req, res) => {
         res.status(500).json({ message: 'Eroare la trimiterea link-ului magic.' });
     }
 };
+
+
 
 exports.validateMagicLink = async (req, res) => {
     const { token } = req.query;
@@ -64,6 +63,7 @@ exports.validateMagicLink = async (req, res) => {
 
         if (magicLink.expiresAt < new Date()) {
             await magicLink.destroy();
+            console.log('Link-ul a expirat.');
             return res.status(400).json({ message: 'Link-ul a expirat.' });
         }
 
@@ -72,14 +72,10 @@ exports.validateMagicLink = async (req, res) => {
             return res.status(400).json({ message: 'Utilizatorul nu a fost găsit.' });
         }
 
-        // Generarea unui JWT pentru sesiune
-        const tokenJWT = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-        // Ștergerea link-ului magic după utilizare
+        const tokenJWT = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
         await magicLink.destroy();
 
-        // Redirecționarea cu token-ul JWT
-        res.redirect(`${process.env.BASE_URL}/dashboard?token=${tokenJWT}`);
+        res.redirect(`${process.env.FRONTEND_URL}/dashboard/validate-magic-link?token=${tokenJWT}`);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Eroare la validarea link-ului magic.' });

@@ -10,11 +10,13 @@ module.exports = {
         host: process.env.DB_HOST || null,
         port: process.env.DB_PORT || null,
         logging: console.log,
+        timezone: 'Europe/Bucharest'
     },
     test: {
         dialect: 'sqlite',
         storage: ':memory:',
         logging: false,
+        timezone: 'Europe/Bucharest'
     },
     production: {
         dialect: process.env.DB_DIALECT || 'mysql',
@@ -24,5 +26,6 @@ module.exports = {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT || 3306,
         logging: false,
+        timezone: 'Europe/Bucharest'
     },
 };

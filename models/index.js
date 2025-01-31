@@ -3,19 +3,22 @@ const config = require('../config/config.js')[process.env.NODE_ENV || 'developme
 
 const sequelize = new Sequelize(config.database, config.username, config.password, {
     dialect: config.dialect,
-    storage: config.storage, // Necesari pentru SQLite
-    logging: config.logging
+    storage: config.storage,
+    logging: config.logging,
+    // timezone: config.timezone,
 });
 
-// Import modele
 const User = require('./User')(sequelize, DataTypes);
 const Administrator = require('./Administrator')(sequelize, DataTypes);
 const MagicLink = require('./MagicLink')(sequelize, DataTypes);
 const Formulare230 = require('./Formulare230')(sequelize, DataTypes);
 const DonationOneTime = require('./DonationOneTime')(sequelize, DataTypes);
 const DonationLunar = require('./DonationLunar')(sequelize, DataTypes);
+const BlogArticle = require('./BlogArticle')(sequelize, DataTypes);
+const Companie = require('./Companie')(sequelize, DataTypes);
+const UserCompanie = require('./UserCompanie')(sequelize, DataTypes);
+const Sponsorizari = require('./Sponsorizari')(sequelize, DataTypes);
 
-// Define asocieri
 User.hasOne(Administrator, { foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Administrator.belongsTo(User, { foreignKey: 'userId' });
 
@@ -35,7 +38,21 @@ DonationLunar.associate = (models) => {
     DonationLunar.belongsTo(models.User, { foreignKey: 'idUser' });
 };
 
-// Export modele și conexiune
+Sponsorizari.belongsTo(Companie, { foreignKey: 'idCompanie', as: 'companie' });
+Companie.hasMany(Sponsorizari, { foreignKey: 'idCompanie', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+
+Companie.hasOne(UserCompanie, {
+    foreignKey: 'CUI',
+    as: 'reprezentantLegal',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+});
+UserCompanie.belongsTo(Companie, {
+    foreignKey: 'CUI',
+    as: 'companie',
+});
+
+
 module.exports = {
     sequelize,
     User,
@@ -43,5 +60,9 @@ module.exports = {
     MagicLink,
     Formulare230,
     DonationOneTime,
-    DonationLunar
+    DonationLunar,
+    BlogArticle,
+    Companie,
+    UserCompanie,
+    Sponsorizari,
 };

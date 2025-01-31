@@ -1,5 +1,7 @@
+const moment = require('moment-timezone');
+
 module.exports = (sequelize, DataTypes) => {
-    const MagicLink = sequelize.define('MagicLink', {
+    return sequelize.define('MagicLink', {
         token: {
             type: DataTypes.STRING,
             unique: true,
@@ -24,8 +26,13 @@ module.exports = (sequelize, DataTypes) => {
         }
     }, {
         tableName: 'MagicLinks',
-        timestamps: false
+        timestamps: false,
+        hooks: {
+            beforeCreate: (magicLink) => {
+                // Setăm datele pe fusul orar Europe/Bucharest
+                magicLink.expiresAt = moment(magicLink.expiresAt).tz('Europe/Bucharest').toDate();
+                magicLink.date_creation = moment().tz('Europe/Bucharest').toDate();
+            }
+        }
     });
-
-    return MagicLink;
 };
