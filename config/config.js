@@ -13,12 +13,14 @@ module.exports = {
     },
     production: {
         dialect: 'mysql',
-        username: process.env.DB_USER,
+        username: process.env.DB_USER || 'onedu_apicor',
         password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        host: process.env.DB_HOST,
+        database: process.env.DB_NAME || 'onedu_onedu.ro',
+        host: process.env.DB_HOST || '127.0.0.1',
         port: process.env.DB_PORT || 3306,
-        logging: false,
-        timezone: '+02:00'
-    },
+        logging: console.log,
+        dialectOptions: {
+            connectTimeout: 60000
+        }
+    }
 };
