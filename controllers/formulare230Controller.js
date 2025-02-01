@@ -7,6 +7,7 @@ const multer = require('multer');
 const fontkit = require('@pdf-lib/fontkit');
 const manageFTP = require('../utils/ftpManager');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../utils/logger'); // Import logger
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -25,7 +26,7 @@ exports.submitForm = async (req, res) => {
             semnaturaFileName = `${uuidv4()}.png`;
             await manageFTP('upload', req.file.buffer, `formulare230/semnaturi/${semnaturaFileName}`);
         } catch (error) {
-            console.error('Eroare la încărcarea semnăturii pe FTP:', error);
+            logger.error('Eroare la încărcarea semnăturii pe FTP:', error);
             return res.status(500).json({ message: 'Eroare la încărcarea semnăturii' });
         }
     }
@@ -56,7 +57,7 @@ exports.submitForm = async (req, res) => {
 
         res.status(201).json({ message: 'Formularul a fost trimis și email-ul a fost trimis cu succes.' });
     } catch (error) {
-        console.error('Eroare la trimiterea formularului:', error);
+        logger.error('Eroare la trimiterea formularului:', error);
         res.status(500).json({ message: 'A apărut o eroare la trimiterea formularului.' });
     }
 };
@@ -258,13 +259,12 @@ const generateFormPDF = async (formular) => {
                     const signatureImage = await pdfDoc.embedPng(signatureBytes);
                     firstPage.drawImage(signatureImage, { x: 170, y: 120, width: 50, height: 40 });
                 } else {
-                    console.error(`Eroare: Fișierul semnăturii ${formular.semnatura} este gol!`);
+                    logger.error(`Eroare: Fișierul semnăturii ${formular.semnatura} este gol!`);
                 }
             } else {
-                console.error(`Eroare: Fișierul semnăturii ${formular.semnatura} nu a fost descărcat!`);
+                logger.error(`Eroare: Fișierul semnăturii ${formular.semnatura} nu a fost descărcat!`);
             }
         } else {
-
             const scriptFontPath = path.join(__dirname, '../fonts/DejaVuSans.ttf');
             const scriptFontBytes = await fs.readFile(scriptFontPath);
             const scriptFont = await pdfDoc.embedFont(scriptFontBytes);
@@ -278,10 +278,9 @@ const generateFormPDF = async (formular) => {
             });
         }
 
-
         return await pdfDoc.save();
     } catch (error) {
-        console.error('Eroare la generarea PDF-ului formularului:', error);
+        logger.error('Eroare la generarea PDF-ului formularului:', error);
         throw error;
     }
 };
@@ -303,44 +302,43 @@ const generateCertificatePDF = async (formular) => {
 
         return await pdfDoc.save();
     } catch (error) {
-        console.error('Eroare la generarea certificatului:', error);
+        logger.error('Eroare la generarea certificatului:', error);
         throw error;
     }
 };
 
-
 exports.getAllFormulare = async (req, res) => {
     try {
         const formulare = await Formulare230.findAll({
-            attributes: {exclude: ['createdAt', 'updatedAt']},
+            attributes: { exclude: ['createdAt', 'updatedAt'] },
         });
         res.status(200).json(formulare);
     } catch (error) {
-        console.error('Eroare la obținerea formularelor:', error);
-        res.status(500).json({message: 'A apărut o eroare la obținerea formularelor.'});
+        logger.error('Eroare la obținerea formularelor:', error);
+        res.status(500).json({ message: 'A apărut o eroare la obținerea formularelor.' });
     }
 };
 
 exports.getFormularById = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     try {
         const formular = await Formulare230.findByPk(id);
         if (!formular) {
-            return res.status(404).json({message: 'Formularul nu a fost găsit.'});
+            return res.status(404).json({ message: 'Formularul nu a fost găsit.' });
         }
         res.status(200).json(formular);
     } catch (error) {
-        console.error('Eroare la obținerea formularului:', error);
-        res.status(500).json({message: 'A apărut o eroare la obținerea formularului.'});
+        logger.error('Eroare la obținerea formularului:', error);
+        res.status(500).json({ message: 'A apărut o eroare la obținerea formularului.' });
     }
 };
 
-const {Parser} = require('json2csv');
+const { Parser } = require('json2csv');
 
 exports.exportFormulare = async (req, res) => {
     try {
         const formulare = await Formulare230.findAll({
-            attributes: {exclude: ['createdAt', 'updatedAt']},
+            attributes: { exclude: ['createdAt', 'updatedAt'] },
         });
 
         const jsonFormulare = formulare.map((formular) => formular.toJSON());
@@ -352,9 +350,7 @@ exports.exportFormulare = async (req, res) => {
         res.attachment('formulare230.csv');
         res.send(csvData);
     } catch (error) {
-        console.error('Eroare la exportul formularelor:', error);
-        res.status(500).json({message: 'A apărut o eroare la exportul formularelor.'});
+        logger.error('Eroare la exportul formularelor:', error);
+        res.status(500).json({ message: 'A apărut o eroare la exportul formularelor.' });
     }
 };
-
-
