@@ -7,7 +7,6 @@ const emailRoutes = require('./routes/emailRoutes');
 const userRoutes = require('./routes/userRoutes');
 const formulare230Routes = require('./routes/formulare230Routes');
 const donationRoutes = require('./routes/donationRoutes');
-const smartPayRoutes = require('./routes/smartPayRoutes');
 const blogRouter = require('./routes/blogRoutes');
 const sponsorizariRoutes = require('./routes/sponsorizariRoutes');
 const rateLimit = require('express-rate-limit');

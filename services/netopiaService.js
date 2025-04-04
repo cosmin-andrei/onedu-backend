@@ -9,7 +9,10 @@ dotenv.config();
 
 const mobilPay = new MobilPay(process.env.MOBILPAY_SIGNATURE);
 
-const publicKey = fs.readFileSync(process.env.MOBILPAY_PUBLIC_KEY_PATH, 'utf8').trim();
+const path = require('path');
+const publicKeyPath = path.join(__dirname, '../certs/sandbox.2JN8-R7WK-4QOY-ORHY-4XLI.public.cer');
+const publicKey = fs.readFileSync(publicKeyPath);
+
 console.log('Public key path:', process.env.MOBILPAY_PUBLIC_KEY_PATH);
 mobilPay.setPublicKey(publicKey);
 
