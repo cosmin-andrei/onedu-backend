@@ -15,6 +15,11 @@ const Donation = require('./Donation')(sequelize, DataTypes);
 const NetopiaTransaction = require('./NetopiaTransaction')(sequelize, DataTypes);
 const SmartPayTransaction = require('./SmartPayTransaction')(sequelize, DataTypes);
 
+if (sequelize.getDialect() === 'sqlite') {
+    await sequelize.query('PRAGMA journal_mode = WAL;');
+    console.log('🔄 SQLite WAL activat');
+}
+
 User.hasOne(Administrator, { foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Administrator.belongsTo(User, { foreignKey: 'userId' });
 
