@@ -1,17 +1,19 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-
-  // GMAIL
-
-  const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-          user: process.env.EMAIL_USER,
-         pass: process.env.EMAIL_PASS
-      }
-  });
-
+/**
+ * GMAIL
+ *
+ * const transporter = nodemailer.createTransport({
+ *     service: 'Gmail',
+ *     auth: {
+ *         user: process.env.EMAIL_USER,
+ *         pass: process.env.EMAIL_PASS
+ *     }
+ * });
+ *
+ *
+ */
 
 /**
  * SMTP_HOST=mail.domeniu.ro
@@ -21,15 +23,18 @@ require('dotenv').config();
  *
  */
 
-// const transporter = nodemailer.createTransport({
-//     host: process.env.SMTP_HOST,
-//     port: parseInt(process.env.SMTP_PORT) || 465,
-//     secure: true,
-//     auth: {
-//         user: process.env.EMAIL_USERCP,
-//         pass: process.env.EMAIL_PASSCP,
-//     }
-// });
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT) || 465,
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_USERCP,
+        pass: process.env.EMAIL_PASSCP,
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
 
 const sendEmail = async (to, subject, html, attachments) => {
     const mailOptions = {
