@@ -3,14 +3,8 @@ require('dotenv').config();
 module.exports = {
     development: {
         dialect: 'sqlite',
-        storage: './onedu.sqlite',
+        storage: './identifier.sqlite',
         logging: console.log,
-        pool: {
-            max: 1,
-            min: 0,
-            acquire: 30000,
-            idle: 10000,
-        }
     },
     test: {
         dialect: 'sqlite',
