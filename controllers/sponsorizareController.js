@@ -203,13 +203,13 @@ exports.getAllContracts = async (req, res) => {
         res.status(200).json(contracts);
     } catch (error) {
         console.error('Eroare la obținerea contractelor:', error);
-        res.status(500).json({ message: 'A apărut o eroare la obținerea contractelor.' });
+        res.status(500).json({message: 'A apărut o eroare la obținerea contractelor.'});
     }
 };
 
 
 exports.getContractById = async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
     try {
         const contract = await Sponsorizari.findByPk(id, {
             include: [
@@ -229,17 +229,18 @@ exports.getContractById = async (req, res) => {
         });
 
         if (!contract) {
-            return res.status(404).json({ message: 'Contractul nu a fost găsit.' });
+            return res.status(404).json({message: 'Contractul nu a fost găsit.'});
         }
 
         res.status(200).json(contract);
     } catch (error) {
         console.error('Eroare la obținerea contractului:', error);
-        res.status(500).json({ message: 'A apărut o eroare la obținerea contractului.' });
+        res.status(500).json({message: 'A apărut o eroare la obținerea contractului.'});
     }
 };
 
-const { Parser } = require('json2csv');
+const {Parser} = require('json2csv');
+const {Op} = require("sequelize");
 
 exports.exportContracts = async (req, res) => {
     try {
@@ -270,6 +271,22 @@ exports.exportContracts = async (req, res) => {
         res.send(csvData);
     } catch (error) {
         console.error('Eroare la exportul contractelor:', error);
-        res.status(500).json({ message: 'A apărut o eroare la exportul contractelor.' });
+        res.status(500).json({message: 'A apărut o eroare la exportul contractelor.'});
     }
 };
+
+exports.getContractsByYear = async (req, res) => {
+    //an curent
+    const year = new Date().getFullYear();
+
+    const contracts = await Sponsorizari.findAll({
+        where: {
+            data: {
+                [Op.between]: [`${year}-01-01`, `${year}-12-31`],
+            },
+        },
+    });
+
+    return contracts.length;
+
+}

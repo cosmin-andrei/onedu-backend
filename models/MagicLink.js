@@ -29,7 +29,6 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false,
         hooks: {
             beforeCreate: (magicLink) => {
-                // Setăm datele pe fusul orar Europe/Bucharest
                 magicLink.expiresAt = moment(magicLink.expiresAt).tz('Europe/Bucharest').toDate();
                 magicLink.date_creation = moment().tz('Europe/Bucharest').toDate();
             }

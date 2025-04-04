@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         telefon: {
             type: DataTypes.STRING,
-            allowNull: true // Telefonul este opțional
+            allowNull: true
         },
         date_creation: {
             type: DataTypes.DATE,
@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     }, {
         tableName: 'Users',
-        timestamps: false // Dezactivează createdAt și updatedAt
+        timestamps: false
     });
 
     return User;

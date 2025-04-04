@@ -1,4 +1,3 @@
-// backend/middlewares/authenticateJWT.js
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -10,14 +9,14 @@ const authenticateJWT = (req, res, next) => {
 
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
             if (err) {
-                return res.sendStatus(403); // Forbidden
+                return res.sendStatus(403);
             }
 
             req.user = user;
             next();
         });
     } else {
-        res.sendStatus(401); // Unauthorized
+        res.sendStatus(401);
     }
 };
 

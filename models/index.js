@@ -7,12 +7,13 @@ const User = require('./User')(sequelize, DataTypes);
 const Administrator = require('./Administrator')(sequelize, DataTypes);
 const MagicLink = require('./MagicLink')(sequelize, DataTypes);
 const Formulare230 = require('./Formulare230')(sequelize, DataTypes);
-const DonationOneTime = require('./DonationOneTime')(sequelize, DataTypes);
-const DonationLunar = require('./DonationLunar')(sequelize, DataTypes);
 const BlogArticle = require('./BlogArticle')(sequelize, DataTypes);
 const Companie = require('./Companie')(sequelize, DataTypes);
 const UserCompanie = require('./UserCompanie')(sequelize, DataTypes);
 const Sponsorizari = require('./Sponsorizari')(sequelize, DataTypes);
+const Donation = require('./Donation')(sequelize, DataTypes);
+const NetopiaTransaction = require('./NetopiaTransaction')(sequelize, DataTypes);
+const SmartPayTransaction = require('./SmartPayTransaction')(sequelize, DataTypes);
 
 User.hasOne(Administrator, { foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Administrator.belongsTo(User, { foreignKey: 'userId' });
@@ -20,18 +21,8 @@ Administrator.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(MagicLink, { foreignKey: 'userId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 MagicLink.belongsTo(User, { foreignKey: 'userId' });
 
-User.associate = (models) => {
-    User.hasMany(models.DonationOneTime, { foreignKey: 'idUser' });
-    User.hasMany(models.DonationLunar, { foreignKey: 'idUser' });
-};
-
-DonationOneTime.associate = (models) => {
-    DonationOneTime.belongsTo(models.User, { foreignKey: 'idUser' });
-};
-
-DonationLunar.associate = (models) => {
-    DonationLunar.belongsTo(models.User, { foreignKey: 'idUser' });
-};
+User.hasMany(Donation, { foreignKey: 'idUser', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+Donation.belongsTo(User, { foreignKey: 'idUser' });
 
 Sponsorizari.belongsTo(Companie, { foreignKey: 'idCompanie', as: 'companie' });
 Companie.hasMany(Sponsorizari, { foreignKey: 'idCompanie', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
@@ -47,6 +38,17 @@ UserCompanie.belongsTo(Companie, {
     as: 'companie',
 });
 
+Donation.hasOne(SmartPayTransaction, { foreignKey: 'donationId', onDelete: 'CASCADE' });
+SmartPayTransaction.belongsTo(Donation, { foreignKey: 'donationId' });
+
+Donation.hasOne(NetopiaTransaction, { foreignKey: 'donationId', onDelete: 'CASCADE' });
+NetopiaTransaction.belongsTo(Donation, { foreignKey: 'donationId' });
+
+(async () => {
+    await sequelize.authenticate();
+    await sequelize.query("PRAGMA journal_mode = WAL;");
+    console.log("🔄 SQLite WAL activat");
+})();
 
 module.exports = {
     sequelize,
@@ -54,10 +56,11 @@ module.exports = {
     Administrator,
     MagicLink,
     Formulare230,
-    DonationOneTime,
-    DonationLunar,
+    Donation,
     BlogArticle,
     Companie,
     UserCompanie,
     Sponsorizari,
+    NetopiaTransaction,
+    SmartPayTransaction
 };

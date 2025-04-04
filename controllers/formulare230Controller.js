@@ -1,16 +1,15 @@
-const { Formulare230 } = require('../models');
+const {Formulare230} = require('../models');
 const sendEmail = require('../utils/sendEmail');
 const fs = require('fs-extra');
 const path = require('path');
-const { PDFDocument, rgb } = require('pdf-lib');
+const {PDFDocument, rgb} = require('pdf-lib');
 const multer = require('multer');
 const fontkit = require('@pdf-lib/fontkit');
 const manageFTP = require('../utils/ftpManager');
-const { v4: uuidv4 } = require('uuid');
-const logger = require('../utils/logger'); // Import logger
-
+const {v4: uuidv4} = require('uuid');
+const logger = require('../utils/logger');
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({storage: storage});
 exports.uploadSignature = upload.single('semnatura');
 
 exports.submitForm = async (req, res) => {
@@ -19,6 +18,7 @@ exports.submitForm = async (req, res) => {
         bloc, scara, etaj, apartament, judet, oras, perioada_redirectionare
     } = req.body;
 
+    const an = new Date().getFullYear();
     let semnaturaFileName = null;
 
     if (req.file) {
@@ -27,15 +27,26 @@ exports.submitForm = async (req, res) => {
             await manageFTP('upload', req.file.buffer, `formulare230/semnaturi/${semnaturaFileName}`);
         } catch (error) {
             logger.error('Eroare la încărcarea semnăturii pe FTP:', error);
-            return res.status(500).json({ message: 'Eroare la încărcarea semnăturii' });
+            return res.status(500).json({message: 'Eroare la încărcarea semnăturii'});
         }
     }
 
     try {
+        const existing = await Formulare230.findOne({
+            where: {
+                cnp,
+                an
+            }
+        });
+
+        if (existing) {
+            return res.status(409).json({message: 'Formular deja trimis pentru acest CNP în anul curent.'});
+        }
+
         const formular = await Formulare230.create({
             nume, prenume, initiala_tatalui, cnp, email, telefon, strada,
             numarul, bloc, scara, etaj, apartament, judet, oras,
-            perioada_redirectionare, semnatura: semnaturaFileName
+            perioada_redirectionare, semnatura: semnaturaFileName, an
         });
 
         const pdfBuffer = await generateFormPDF(formular);
@@ -50,15 +61,15 @@ exports.submitForm = async (req, res) => {
             'Formular 230 - Confirmare și Certificat Donator',
             personalizedHtml,
             [
-                { content: pdfBuffer, filename: `formular230_${formular.prenume}.pdf` },
-                { content: certificateBuffer, filename: `certificate_${formular.prenume}_${formular.nume}.pdf` }
+                {content: pdfBuffer, filename: `formular230_${formular.prenume}.pdf`},
+                {content: certificateBuffer, filename: `certificate_${formular.prenume}_${formular.nume}.pdf`}
             ]
         );
 
-        res.status(201).json({ message: 'Formularul a fost trimis și email-ul a fost trimis cu succes.' });
+        res.status(201).json({message: 'Formularul a fost trimis și email-ul a fost trimis cu succes.'});
     } catch (error) {
         logger.error('Eroare la trimiterea formularului:', error);
-        res.status(500).json({ message: 'A apărut o eroare la trimiterea formularului.' });
+        res.status(500).json({message: 'A apărut o eroare la trimiterea formularului.'});
     }
 };
 
@@ -246,7 +257,7 @@ const generateFormPDF = async (formular) => {
             await manageFTP('download', tempSignaturePath, `formulare230/semnaturi/${formular.semnatura}`);
             const signatureBytes = await fs.readFile(tempSignaturePath);
             const signatureImage = await pdfDoc.embedPng(signatureBytes);
-            firstPage.drawImage(signatureImage, { x: 170, y: 120, width: 50, height: 40 });
+            firstPage.drawImage(signatureImage, {x: 170, y: 120, width: 50, height: 40});
         }
 
         if (formular.semnatura) {
@@ -257,7 +268,7 @@ const generateFormPDF = async (formular) => {
                 const signatureBytes = await fs.readFile(tempSignaturePath);
                 if (signatureBytes.length > 0) {
                     const signatureImage = await pdfDoc.embedPng(signatureBytes);
-                    firstPage.drawImage(signatureImage, { x: 170, y: 120, width: 50, height: 40 });
+                    firstPage.drawImage(signatureImage, {x: 170, y: 120, width: 50, height: 40});
                 } else {
                     logger.error(`Eroare: Fișierul semnăturii ${formular.semnatura} este gol!`);
                 }
@@ -298,7 +309,13 @@ const generateCertificatePDF = async (formular) => {
         const font = await pdfDoc.embedFont(fontBytes);
 
         const firstPage = pdfDoc.getPages()[0];
-        firstPage.drawText(`${formular.prenume} ${formular.nume}`, { x: 415, y: 250, size: 40, font: font, color: rgb(0, 0, 0) });
+        firstPage.drawText(`${formular.prenume} ${formular.nume}`, {
+            x: 415,
+            y: 250,
+            size: 40,
+            font: font,
+            color: rgb(0, 0, 0)
+        });
 
         return await pdfDoc.save();
     } catch (error) {
@@ -310,35 +327,36 @@ const generateCertificatePDF = async (formular) => {
 exports.getAllFormulare = async (req, res) => {
     try {
         const formulare = await Formulare230.findAll({
-            attributes: { exclude: ['createdAt', 'updatedAt'] },
+            attributes: {exclude: ['createdAt', 'updatedAt']},
         });
         res.status(200).json(formulare);
     } catch (error) {
         logger.error('Eroare la obținerea formularelor:', error);
-        res.status(500).json({ message: 'A apărut o eroare la obținerea formularelor.' });
+        res.status(500).json({message: 'A apărut o eroare la obținerea formularelor.'});
     }
 };
 
 exports.getFormularById = async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
     try {
         const formular = await Formulare230.findByPk(id);
         if (!formular) {
-            return res.status(404).json({ message: 'Formularul nu a fost găsit.' });
+            return res.status(404).json({message: 'Formularul nu a fost găsit.'});
         }
         res.status(200).json(formular);
     } catch (error) {
         logger.error('Eroare la obținerea formularului:', error);
-        res.status(500).json({ message: 'A apărut o eroare la obținerea formularului.' });
+        res.status(500).json({message: 'A apărut o eroare la obținerea formularului.'});
     }
 };
 
-const { Parser } = require('json2csv');
+const {Parser} = require('json2csv');
+const {Op} = require("sequelize");
 
 exports.exportFormulare = async (req, res) => {
     try {
         const formulare = await Formulare230.findAll({
-            attributes: { exclude: ['createdAt', 'updatedAt'] },
+            attributes: {exclude: ['createdAt', 'updatedAt']},
         });
 
         const jsonFormulare = formulare.map((formular) => formular.toJSON());
@@ -351,6 +369,23 @@ exports.exportFormulare = async (req, res) => {
         res.send(csvData);
     } catch (error) {
         logger.error('Eroare la exportul formularelor:', error);
-        res.status(500).json({ message: 'A apărut o eroare la exportul formularelor.' });
+        res.status(500).json({message: 'A apărut o eroare la exportul formularelor.'});
     }
 };
+
+//count formulare pe an
+exports.getFormulareByYear = async (req, res) => {
+
+    //an curent
+    const year = new Date().getFullYear();
+
+    const formulare = await Formulare230.findAll({
+        where: {
+            data_completarii: {
+                [Op.between]: [`${year}-01-01`, `${year}-12-31`],
+            },
+        },
+    });
+    return formulare.length;
+
+}

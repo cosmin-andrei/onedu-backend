@@ -1,5 +1,7 @@
-module.exports = (sequelize, DataTypes) => {
-    const DonationLunar = sequelize.define('DonationLunar', {
+const { DataTypes } = require('sequelize');
+
+module.exports = (sequelize) => {
+    return sequelize.define('Donation', {
         idUser: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -24,11 +26,17 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             defaultValue: 'pending',
         },
+        tip_donatie: {
+            type: DataTypes.ENUM('one_time', 'lunar'),
+            allowNull: false,
+        },
+        metoda_plata: {
+            type: DataTypes.ENUM('smartpay', 'netopia'),
+            allowNull: false,
+            comment: "Metoda prin care s-a efectuat plata",
+        }
     }, {
-        tableName: 'donations_Lunar',
+        tableName: 'donations',
         timestamps: true,
     });
-    
-
-    return DonationLunar;
 };
