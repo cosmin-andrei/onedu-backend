@@ -21,6 +21,8 @@ exports.submitForm = async (req, res) => {
     const an = new Date().getFullYear();
     let semnaturaFileName = null;
 
+    logger.info(`Formular primit pentru ${prenume} ${nume} (${an})`);
+
     if (req.file) {
         try {
             semnaturaFileName = `${uuidv4()}.png`;
@@ -40,6 +42,7 @@ exports.submitForm = async (req, res) => {
         });
 
         if (existing) {
+            logger.warn(`Formular deja trimis în anul curent pentru ${prenume} ${nume}`);
             return res.status(409).json({message: 'Formular deja trimis pentru acest CNP în anul curent.'});
         }
 
@@ -48,6 +51,8 @@ exports.submitForm = async (req, res) => {
             numarul, bloc, scara, etaj, apartament, judet, oras,
             perioada_redirectionare, semnatura: semnaturaFileName, an
         });
+
+        logger.info(`Formular salvat în baza de date pentru ${prenume} ${nume}`);
 
         const pdfBuffer = await generateFormPDF(formular);
         const certificateBuffer = await generateCertificatePDF(formular);
@@ -65,6 +70,8 @@ exports.submitForm = async (req, res) => {
                 {content: certificateBuffer, filename: `certificate_${formular.prenume}_${formular.nume}.pdf`}
             ]
         );
+
+        logger.info(`Email trimis către ${email} pentru ${prenume} ${nume}`);
 
         res.status(201).json({message: 'Formularul a fost trimis și email-ul a fost trimis cu succes.'});
     } catch (error) {
@@ -288,6 +295,8 @@ const generateFormPDF = async (formular) => {
                 color: rgb(0, 0, 0),
             });
         }
+
+        logger.info(`PDF generat pentru ${formular.prenume} ${formular.nume}`);
 
         return await pdfDoc.save();
     } catch (error) {
