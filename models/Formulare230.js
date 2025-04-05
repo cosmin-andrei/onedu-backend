@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
         },
+
     }, {
         tableName: 'formulare230',
         timestamps: false,
